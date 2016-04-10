@@ -5,7 +5,6 @@ The LED strips are laid out in a physical space, so there are 3 components to th
 - led-positions:
 
   This is the compiler that identifies the X,Y positions of each
-
   light and it's position in the original LED strip
 
   Input data is for a grid 12 x 33.
@@ -17,11 +16,20 @@ The LED strips are laid out in a physical space, so there are 3 components to th
          Sign Co-ords are bottom,left -> top,right.
          Procesing Co-ords are Top,Left -> Bottom,right.
 
-- Processing
-  This generates the arrays of color data for the arduino to load
-  Inout data is a json file which also includes a schema and config variables
+- Processing:
 
-- Arduino
+  This generates the arrays of color data for the arduino to load
+
+  Input data is a json file which also includes a schema and config variables
+  
+  Output is a #include file that defines a 2D array of sequence data
+
+        [ duration , #led1color , #led2color ... ],
+        [ duration , #led1color , #led2color ... ],
+        ...
+
+- Arduino:
+
   The microcode loader and simple sequencer
 
 Use 'compile-data.pl' to generate the lists of leds per letter and their
