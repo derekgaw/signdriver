@@ -5,6 +5,8 @@
 use strict ;
 use feature qw(say switch);
 
+use Math::Round;
+
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1 ;
 
@@ -76,7 +78,7 @@ my $data = {
         offsetx => 20,
         offsety => 20,
         xslices => 30,
-        yslices => 20,
+        yslices => 16,
         headerFile => 'signCoords.h',
     }
 };
@@ -178,8 +180,14 @@ foreach my $id ( sort{ $a<=>$b} keys %{ $data->{pixels} } ) {
         # calculate the slice position
         my $x = $rec->{xpo};
         my $y = $rec->{ypo};
-        my $xs = int($x / $data->{config}{minX} * $data->{config}{xslices});
-        my $ys = int($y / $data->{config}{minY} * $data->{config}{yslices});
+
+        # minX and minY are the MINIMUM bounds of the data
+        # and we get odd clipping erros if we use 'int()'
+        # so round to the nearest slice
+        # my $xs = int($x / $data->{config}{minX} * $data->{config}{xslices});
+        # my $ys = int($y / $data->{config}{minY} * $data->{config}{yslices});
+        my $xs = round($x / $data->{config}{minX} * $data->{config}{xslices});
+        my $ys = round($y / $data->{config}{minY} * $data->{config}{yslices});
         push @{ $data->{index}{wipe}{x}[$xs] } , $id ;
         push @{ $data->{index}{wipe}{y}[$ys] } , $id ;
         # say "ID $id : x[$x] xs[$xs]";
@@ -188,6 +196,8 @@ foreach my $id ( sort{ $a<=>$b} keys %{ $data->{pixels} } ) {
         $rec->{xpo} += $data->{config}{offsetx};
         $rec->{ypo} *= -1 ;
         $rec->{ypo} += ( $maxY + $data->{config}{offsety}) ;
+
+        # say "wxt[$id] , $xs , $ys : $x , $y";
 
     }
 }
