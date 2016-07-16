@@ -47,7 +47,7 @@ LPD6803 strip = LPD6803(nLEDs, dataPin, clockPin);
  */
 
 // quantised color values in the range 0 - 127
-byte indexChannel[6] = { 10,32,54,76,98,120 };
+byte indexChannel[6] = { 3,8,14,19,24,29 };
 
 
 void setup() {
@@ -62,16 +62,12 @@ void setup() {
   
   strip.setCPUmax(80);  // start with 50% CPU usage. up this if the strand flickers or is slow
 
-  
   // Start up the LED strip
   strip.begin();
 
   // Update the strip, to start they are all 'off'
   for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
 
-//   test a pixel
-//  strip.setPixelColor(1, Color(31, 0, 0));
-  
   strip.show();
 }
 
@@ -79,27 +75,44 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   int i;
+  int cindex ;
   uint32_t color;
 
   // Start by turning all pixels off:
   for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
 
-  color = applyColor(31,0,0,-1); // red
+//  color = applyColor(31,0,0,-1); // red
+//  color = indexToColor(100,-1);
+  color = Wheel(256);
+
+  // use index color
+//  for(i=1; i<=214; i+=10) {
+
+  // use wheel color
+  for(i=0; i<=384; i+=30) {
+
+    // lookup an index color
+    color = Wheel(i);
+
+//    color = indexToColor(100,-1);
+
+    showLetters(color,1000,0);
+    delay(200);
+    showLetters(color,200,100);
+    delay(200);
+    wipeLeftRight(color,100);
+    delay(200);
+    wipeUpDown(color,100);
   
+  //  strip.show();
+    delay(200);
 
-  showLetters(color,1000);
-  delay(1000);
-  wipeLeftRight(color,100);
-  delay(1000);
-  wipeUpDown(color,100);
-
-//  strip.show();
-  delay(1000);
+  }
 
  
 }
 
-void showLetters(uint32_t color, int letterDelay) {
+void showLetters(uint32_t color, int letterDelay, int perPixelDelay ) {
   // loop over ALL letters
   int letter;
   int i;
@@ -114,6 +127,14 @@ void showLetters(uint32_t color, int letterDelay) {
       // lookup the pixels in this letter
       int id = lSeq[letter][i]; 
       strip.setPixelColor(id, color);
+
+      if ( perPixelDelay ) {
+        // one pixel at a time
+        if ( perPixelDelay <= 100 ) { perPixelDelay = 100; }
+        strip.show();
+        delay(perPixelDelay);
+      }
+      
 
       // delay(1000);
     }
@@ -175,7 +196,16 @@ void wipeUpDown(uint32_t color, int sliceDelay) {
       int id = wipey[s][i]; 
       strip.setPixelColor(id, color);
     }
+    
     strip.show();
+
+    /*
+    // draw eack slice and then clear screen
+    delay(150);
+    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+    strip.show();
+    */
+    
     delay(sliceDelay);
   }
   
@@ -195,7 +225,7 @@ void wipeUpDown(uint32_t color, int sliceDelay) {
  * (This also lets you pass bogus/unknown IDs)
  */
 
-uint16_t applyColor(byte b, byte g, byte r, uint16_t id ) {
+uint16_t applyColor(byte b, byte g, byte r, int id ) {
      uint16_t color = Color(r,g,b);
      return color;
 }
@@ -214,10 +244,10 @@ uint16_t applyColor(byte b, byte g, byte r, uint16_t id ) {
  *  to applyColor(), BUT this also means we need to pass
  *  the LED ID, (but we can pass '-1' to bypass this)
  */
-uint32_t indexToColor(uint16_t id, byte index)
+uint32_t indexToColor(byte index, int id)
 {
   byte r, g, b;
-  byte mod;
+  int mod;
 
   mod = index % 6;
   b = indexChannel[ mod ];
@@ -228,8 +258,9 @@ uint32_t indexToColor(uint16_t id, byte index)
   index -= mod;
 
   r = indexChannel[ mod / 36 ];
-    
-  return(applyColor(r,g,b, -1 ));
+  
+//  return(applyColor(r,g,b,id));
+  return(applyColor(0,20,0,id));
 }
 
 
