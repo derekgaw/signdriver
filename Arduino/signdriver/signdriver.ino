@@ -1,11 +1,12 @@
-#include <LPD8806.h>
+#include <TimerOne.h>
+#include "LPD6803.h"
 
 // Globals  
 
 #include "signCoords.h"
 
 // Number of RGB LEDs in strand:
-int nLEDs = 160;
+int nLEDs = 208;
 
 // Chose 2 pins for output; can be any valid output pins:
 
@@ -21,20 +22,27 @@ int clockPin = 52;
 // First parameter is the number of LEDs in the strand.  The LED strips
 // are 32 LEDs per meter but you can extend or cut the strip.  Next two
 // parameters are SPI data and clock pins:
-LPD8806 strip = LPD8806(nLEDs, dataPin, clockPin);
+LPD6803 strip = LPD6803(nLEDs, dataPin, clockPin);
 
-// how to use LPD8806.h
+// how to use LPD-6803
 //   https://github.com/adafruit/LPD8806
+//   https://learn.adafruit.com/20mm-led-pixels?view=all
 
 /*
  * pixel IDs are '0' based
  * strip.setPixelColor(index, 0); // off.
  * 
- * uint32_t mycolor = strip.Color(  0, 127, 127 );
+ * the pixels use 5 bits per channel ( 1-31 )
+ * so any angorithms need to re-do indexes to between those values
+ * 
+ * NOTE - these ranges are REALLY FINE, it is hard to tell the difference
+ * between 50% and 100% brightness
+ * 
+ * uint16_t mycolor = Color(  0, 31, 31 );
  * 
  * strip.setPixelColor(i, mycolor);
  * 
- * strip.setPixelColor(i, strip.Color(  0, 127, 127 ) );
+ * strip.setPixelColor(i, Color(  0, 31, 31 ) );
  * 
  */
 
@@ -43,10 +51,27 @@ byte indexChannel[6] = { 10,32,54,76,98,120 };
 
 
 void setup() {
+  int i;
+  
+  // The Arduino needs to clock out the data to the pixels
+  // this happens in interrupt timer 1, we can change how often
+  // to call the interrupt. setting CPUmax to 100 will take nearly all all the
+  // time to do the pixel updates and a nicer/faster display, 
+  // especially with strands of over 100 dots.
+  // (Note that the max is 'pessimistic', its probably 10% or 20% less in reality)
+  
+  strip.setCPUmax(80);  // start with 50% CPU usage. up this if the strand flickers or is slow
+
+  
   // Start up the LED strip
   strip.begin();
 
   // Update the strip, to start they are all 'off'
+  for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+
+//   test a pixel
+//  strip.setPixelColor(1, Color(31, 0, 0));
+  
   strip.show();
 }
 
@@ -56,7 +81,9 @@ void loop() {
   int i;
   uint32_t color;
 
-  color = strip.Color(127,  0,    0); // Red
+//  color = Color(31,  20,    0); // Blue
+  color = applyColor(31,20,30,-1); // red
+  
 //  color = strip.Color(0,  127,    0); // Green
 //  color = strip.Color(0,    0,  127); // Blue
 //  color = strip.Color(127,  127,  127); // White
@@ -65,18 +92,20 @@ void loop() {
   for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
 
   // write first 10 pixels
-  for(i=0; i<10; i++) strip.setPixelColor(i, color);
+//  for(i=0; i<10; i++) strip.setPixelColor(i, color);
 
 
 /*
- *
   // try and draw a letter, use row 0
   
   // First letter
-  int letter = 0;
+  int letter = 2;
 
   // loop over ALL letters
-//  for(letter=0; letter<=2; letter++) {
+  for(letter=0; letter<=2; letter++) {
+
+    //turn it all off
+    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
 
     int len = lSeq[letter][0];
   
@@ -89,23 +118,26 @@ void loop() {
     }
 
     // draw the letter
-//    strip.show();
-//    delay(1000);
-//  }
-
+    strip.show();
+    delay(500);
+  }
 
 */
 
-/*
+
   // run a wipe sequence
 
  // First letter
   int s;
   int slices = wipex[0][1];
 
+//  slices = 4;
+  
+  int ss = 25;
   for(s=1; s<=slices; s++) {
+//  for(s=ss; s<=ss; s++) {
     // set black
-    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+//    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
     
     // get the next slice
     int len = wipex[s][0];
@@ -115,15 +147,16 @@ void loop() {
       strip.setPixelColor(id, color);
     }
     strip.show();
-    delay(500);
+    delay(100);
   }
 
-  
+
+ /* 
  * 
  */
   
   strip.show();
-  delay(2000);
+  delay(1000);
 
  
 }
@@ -135,13 +168,15 @@ void loop() {
  * and returning arrays is tricky in C++, so
  * we just return the packed int.
  * 
+ * for 6803 chipsets, the color order is B,R,G !!
+ * 
  * if the ID doesn't match a known rule, we
  * just calculate the color regardless
  * (This also lets you pass bogus/unknown IDs)
  */
 
-uint32_t applyColor(byte r, byte g, byte b, uint16_t id ) {
-     uint32_t color = strip.Color(r,g,b);
+uint16_t applyColor(byte b, byte g, byte r, uint16_t id ) {
+     uint16_t color = Color(r,g,b);
      return color;
 }
 
@@ -202,5 +237,13 @@ uint32_t Wheel(uint16_t WheelPos)
       g = 0;                  //green off
       break; 
   }
-  return(strip.Color(r,g,b));
+  return(Color(r,g,b));
 }
+
+// Create a 15 bit color value from R,G,B
+unsigned int Color(byte r, byte g, byte b)
+{
+  //Take the lowest 5 bits of each value and append them end to end
+  return( ((unsigned int)g & 0x1F )<<10 | ((unsigned int)b & 0x1F)<<5 | (unsigned int)r & 0x1F);
+}
+
