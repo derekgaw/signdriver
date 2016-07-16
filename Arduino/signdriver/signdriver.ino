@@ -82,7 +82,7 @@ void loop() {
   uint32_t color;
 
 //  color = Color(31,  20,    0); // Blue
-  color = applyColor(31,20,30,-1); // red
+  color = applyColor(31,0,30,-1); // red
   
 //  color = strip.Color(0,  127,    0); // Green
 //  color = strip.Color(0,    0,  127); // Blue
@@ -124,8 +124,8 @@ void loop() {
 
 */
 
-
-  // run a wipe sequence
+/*
+  // run a wipe X sequence
 
  // First letter
   int s;
@@ -134,7 +134,8 @@ void loop() {
 //  slices = 4;
   
   int ss = 25;
-  for(s=1; s<=slices; s++) {
+//  for(s=1; s<=slices; s++) {
+//  for(s=slices; s>=1; s--) {
 //  for(s=ss; s<=ss; s++) {
     // set black
 //    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
@@ -144,6 +145,30 @@ void loop() {
   
     for(i=1; i<=len; i++) {
       int id = wipex[s][i]; 
+      strip.setPixelColor(id, color);
+    }
+    strip.show();
+    delay(100);
+  }
+
+*/
+
+  // run a wipe Y sequence
+
+  int s;
+  int slices = wipey[0][1];
+
+  int ss = 16;
+  for(s=1; s<=slices; s++) {
+//  for(s=ss; s<=ss; s++) {
+    // set black
+//    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+    
+    // get the next slice
+    int len = wipey[s][0];
+  
+    for(i=1; i<=len; i++) {
+      int id = wipey[s][i]; 
       strip.setPixelColor(id, color);
     }
     strip.show();
