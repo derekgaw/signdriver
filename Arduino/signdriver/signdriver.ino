@@ -81,27 +81,28 @@ void loop() {
   int i;
   uint32_t color;
 
-//  color = Color(31,  20,    0); // Blue
-  color = applyColor(31,0,30,-1); // red
-  
-//  color = strip.Color(0,  127,    0); // Green
-//  color = strip.Color(0,    0,  127); // Blue
-//  color = strip.Color(127,  127,  127); // White
-  
   // Start by turning all pixels off:
   for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
 
-  // write first 10 pixels
-//  for(i=0; i<10; i++) strip.setPixelColor(i, color);
-
-
-/*
-  // try and draw a letter, use row 0
+  color = applyColor(31,0,0,-1); // red
   
-  // First letter
-  int letter = 2;
 
+  showLetters(color,1000);
+  delay(1000);
+  wipeLeftRight(color,100);
+  delay(1000);
+  wipeUpDown(color,100);
+
+//  strip.show();
+  delay(1000);
+
+ 
+}
+
+void showLetters(uint32_t color, int letterDelay) {
   // loop over ALL letters
+  int letter;
+  int i;
   for(letter=0; letter<=2; letter++) {
 
     //turn it all off
@@ -119,26 +120,25 @@ void loop() {
 
     // draw the letter
     strip.show();
-    delay(500);
+    delay(letterDelay);
   }
 
-*/
+}
 
-/*
+void wipeLeftRight(uint32_t color, int sliceDelay) {
   // run a wipe X sequence
-
- // First letter
-  int s;
+  // get the # of slices from the first row in the array
+  int s ;
+  int i ;
   int slices = wipex[0][1];
 
-//  slices = 4;
-  
-  int ss = 25;
-//  for(s=1; s<=slices; s++) {
-//  for(s=slices; s>=1; s--) {
-//  for(s=ss; s<=ss; s++) {
-    // set black
-//    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+  // reset to black
+  for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+
+
+  // wipe from bottom to top 
+  // (first row is the bottom)
+  for(s=1; s<=slices; s++) {
     
     // get the next slice
     int len = wipex[s][0];
@@ -148,21 +148,25 @@ void loop() {
       strip.setPixelColor(id, color);
     }
     strip.show();
-    delay(100);
+    delay(sliceDelay);
   }
+  
+}
 
-*/
 
+void wipeUpDown(uint32_t color, int sliceDelay) {
   // run a wipe Y sequence
-
-  int s;
+  // get the # of slices from the first row in the array
+  int s ;
+  int i ;
   int slices = wipey[0][1];
 
-  int ss = 16;
+  // reset to black
+  for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+
+  // wipe from bottom to top 
+  // (first row is the bottom)
   for(s=1; s<=slices; s++) {
-//  for(s=ss; s<=ss; s++) {
-    // set black
-//    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
     
     // get the next slice
     int len = wipey[s][0];
@@ -172,18 +176,9 @@ void loop() {
       strip.setPixelColor(id, color);
     }
     strip.show();
-    delay(100);
+    delay(sliceDelay);
   }
-
-
- /* 
- * 
- */
   
-  strip.show();
-  delay(1000);
-
- 
 }
 
 /*
