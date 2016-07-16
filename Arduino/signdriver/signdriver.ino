@@ -47,11 +47,13 @@ LPD6803 strip = LPD6803(nLEDs, dataPin, clockPin);
  */
 
 // quantised color values in the range 0 - 127
-byte indexChannel[6] = { 3,8,14,19,24,29 };
+byte indexChannel[6] = { 0,8,14,19,24,31 };
 
 
 void setup() {
   int i;
+
+
   
   // The Arduino needs to clock out the data to the pixels
   // this happens in interrupt timer 1, we can change how often
@@ -80,26 +82,38 @@ void loop() {
 
   // Start by turning all pixels off:
   for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+  strip.show();
 
-//  color = applyColor(31,0,0,-1); // red
-//  color = indexToColor(100,-1);
-  color = Wheel(256);
+//  color = indexToColor(2,-1);
+//  color = applyColor(3,29,3,-1);
 
+
+//  // color index cycle test
+//  for(cindex=0; cindex<=214; cindex++) {
+//    color = indexToColor(cindex,-1);
+//    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, color);
+//    strip.show();
+//    delay(200);
+//  }
+  
   // use index color
-//  for(i=1; i<=214; i+=10) {
+//  for(cindex=0; cindex<=214; cindex++) {
+//      lookup an index color 
+//    color = indexToColor(cindex,-1);
 
-  // use wheel color
-  for(i=0; i<=384; i+=30) {
+//  // use wheel color
+  for(cindex=0; cindex<=384; cindex+=20) {
+    color = Wheel(cindex);
 
-    // lookup an index color
-    color = Wheel(i);
-
-//    color = indexToColor(100,-1);
-
-    showLetters(color,1000,0);
+    
+    showLetters(color,500,0);
     delay(200);
-    showLetters(color,200,100);
-    delay(200);
+
+    // [ ] blink all the letters
+
+    // color letterchase
+//    showLetters(color,200,100);
+//    delay(200);
     wipeLeftRight(color,100);
     delay(200);
     wipeUpDown(color,100);
@@ -244,10 +258,11 @@ uint16_t applyColor(byte b, byte g, byte r, int id ) {
  *  to applyColor(), BUT this also means we need to pass
  *  the LED ID, (but we can pass '-1' to bypass this)
  */
-uint32_t indexToColor(byte index, int id)
+uint32_t indexToColor(int index, int id)
 {
   byte r, g, b;
   int mod;
+  int ii = index;
 
   mod = index % 6;
   b = indexChannel[ mod ];
@@ -257,10 +272,19 @@ uint32_t indexToColor(byte index, int id)
   g = indexChannel[ mod / 6 ];
   index -= mod;
 
-  r = indexChannel[ mod / 36 ];
-  
-//  return(applyColor(r,g,b,id));
-  return(applyColor(0,20,0,id));
+  r = indexChannel[ index / 36 ];
+
+  Serial.begin(9600);    
+  Serial.println("in index2c : rgb");
+  Serial.println(ii,DEC);
+  Serial.println(r,DEC);
+  Serial.println(g,DEC);
+  Serial.println(b,DEC);
+  Serial.println(mod,DEC);
+  Serial.println("---");
+
+  return(applyColor(r,g,b,id));
+//  return(applyColor(0,20,0,id));
 }
 
 
