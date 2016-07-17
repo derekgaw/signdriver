@@ -23,6 +23,18 @@ This uses the LPD6803 library to control the strip
 the sign-coords.h file has now neen hardcoded based on testing in the lab.
 So don't run any of the perl scripts unless you want to clobber your code.
 
+### Build environment
+
+* Clone the libraries into the Arduino libaraies folder
+
+    git clone https://github.com/adafruit/LPD6803-RGB-Pixels.git
+
+    git clone https://github.com/PaulStoffregen/TimerOne.git
+
+* Load the signdriver/signdriver.ino file into Arduino
+
+* Most of the arduino code should be documented
+
 
 ## led-positions:
 

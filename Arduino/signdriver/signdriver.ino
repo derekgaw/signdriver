@@ -84,25 +84,29 @@ void loop() {
   for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
   strip.show();
 
+//  E.g:
 //  color = indexToColor(2,-1);
 //  color = applyColor(3,29,3,-1);
 
+/*
+  // color index cycle test
+  for(cindex=0; cindex<=214; cindex++) {
+    color = indexToColor(cindex,-1);
+    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, color);
+    strip.show();
+    delay(200);
+  }
+*/
 
-//  // color index cycle test
-//  for(cindex=0; cindex<=214; cindex++) {
-//    color = indexToColor(cindex,-1);
-//    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, color);
-//    strip.show();
-//    delay(200);
-//  }
-  
-  // use index color, doesn't produce a nice colors, too much white
+// use index color, doesn't produce nice colour
+// a lot of them are ~= white/gray
+// But useful for testing the index lookup
 //  for(cindex=0; cindex<=214; cindex++) {
 //      lookup an index color 
 //    color = indexToColor(cindex,-1);
 
-//  // use wheel color
-  for(cindex=0; cindex<=384; cindex+=20) {
+// use wheel colors to roll around the pallet
+  for(cindex=0; cindex<=96; cindex++) {
     color = Wheel(cindex);
 
     
@@ -274,42 +278,44 @@ uint32_t indexToColor(int index, int id)
 
   r = indexChannel[ index / 36 ];
 
-  Serial.begin(9600);    
-  Serial.println("in index2c : rgb");
-  Serial.println(ii,DEC);
-  Serial.println(r,DEC);
-  Serial.println(g,DEC);
-  Serial.println(b,DEC);
-  Serial.println(mod,DEC);
-  Serial.println("---");
+//  Serial.begin(9600);    
+//  Serial.println("in index2c : rgb");
+//  Serial.println(ii,DEC);
+//  Serial.println(r,DEC);
+//  Serial.println(g,DEC);
+//  Serial.println(b,DEC);
+//  Serial.println(mod,DEC);
+//  Serial.println("---");
 
   return(applyColor(r,g,b,id));
-//  return(applyColor(0,20,0,id));
+  
 }
 
 
 //Input a value 0 to 384 to get a color value.
 //The colours are a transition r - g - b - back to r
 
-uint32_t Wheel(uint16_t WheelPos)
+//Input a value 0 to 96 to get a color value.
+//The colours are a transition r - g -b - back to r
+uint32_t Wheel(byte WheelPos)
 {
-  byte r, g, b;
-  switch(WheelPos / 128)
+  byte r,g,b;
+  switch(WheelPos >> 5)
   {
     case 0:
-      r = 127 - WheelPos % 128;   //Red down
-      g = WheelPos % 128;      // Green up
-      b = 0;                  //blue off
+      r=31- WheelPos % 32;   //Red down
+      g=WheelPos % 32;      // Green up
+      b=0;                  //blue off
       break; 
     case 1:
-      g = 127 - WheelPos % 128;  //green down
-      b = WheelPos % 128;      //blue up
-      r = 0;                  //red off
+      g=31- WheelPos % 32;  //green down
+      b=WheelPos % 32;      //blue up
+      r=0;                  //red off
       break; 
     case 2:
-      b = 127 - WheelPos % 128;  //blue down 
-      r = WheelPos % 128;      //red up
-      g = 0;                  //green off
+      b=31- WheelPos % 32;  //blue down 
+      r=WheelPos % 32;      //red up
+      g=0;                  //green off
       break; 
   }
   return(Color(r,g,b));
