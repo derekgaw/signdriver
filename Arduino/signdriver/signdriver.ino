@@ -5,6 +5,16 @@
 
 #include "signCoords.h"
 
+// some signs have inverted RGB pixels
+// so we define these here, and applyColor() wil use this data
+//Green sign
+// LPD 6803 - 14109 : Leds 1-100, 201-208
+// the 14119 have the Green and Blue Leds swapped
+
+// these are begin-end pairs, first value is the # of pairs
+
+byte reversedLED[5] = {2,0,99,200,207};
+
 // Number of RGB LEDs in strand:
 int nLEDs = 208;
 
@@ -46,14 +56,13 @@ LPD6803 strip = LPD6803(nLEDs, dataPin, clockPin);
  * 
  */
 
-// quantised color values in the range 0 - 127
+// for indexing, we use a quantised set of color intensities in the range 0 - 31
+// see 'indexColor() for details
 byte indexChannel[6] = { 0,8,14,19,24,31 };
 
 
 void setup() {
   int i;
-
-
   
   // The Arduino needs to clock out the data to the pixels
   // this happens in interrupt timer 1, we can change how often
@@ -61,6 +70,10 @@ void setup() {
   // time to do the pixel updates and a nicer/faster display, 
   // especially with strands of over 100 dots.
   // (Note that the max is 'pessimistic', its probably 10% or 20% less in reality)
+
+  // GDH - i have NO IDEA what the max value for this is (100?)
+  // any value > 100 doesn't seem to make any difference, 
+  // for 200 leds the max redraw rate seems to be ~100ms
   
   strip.setCPUmax(80);  // start with 50% CPU usage. up this if the strand flickers or is slow
 
@@ -105,9 +118,18 @@ void loop() {
 //      lookup an index color 
 //    color = indexToColor(cindex,-1);
 
+/*
+ * This is where we would insert the sequencing code
+ * and load an array of information that
+ * can call different effects
+ */
+
+
 // use wheel colors to roll around the pallet
   for(cindex=0; cindex<=96; cindex++) {
     color = Wheel(cindex);
+
+    // run through some different sequences
 
     
     showLetters(color,500,0);
@@ -118,8 +140,10 @@ void loop() {
     // color letterchase
 //    showLetters(color,200,100);
 //    delay(200);
+
     wipeLeftRight(color,100);
     delay(200);
+    
     wipeUpDown(color,100);
   
   //  strip.show();
@@ -130,6 +154,12 @@ void loop() {
  
 }
 
+/*
+ * Show each letter for a fixed period of time,
+ * turn off the last letter before showing the new one
+ * If perPixelDelay > 0, we will draw each letter one pixel at a time
+ * 
+ */
 void showLetters(uint32_t color, int letterDelay, int perPixelDelay ) {
   // loop over ALL letters
   int letter;
@@ -164,6 +194,11 @@ void showLetters(uint32_t color, int letterDelay, int perPixelDelay ) {
 
 }
 
+/*
+ * run a wipe, but don't clear the last slice,
+ * just slowly fill the sign
+ */
+ 
 void wipeLeftRight(uint32_t color, int sliceDelay) {
   // run a wipe X sequence
   // get the # of slices from the first row in the array

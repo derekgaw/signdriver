@@ -7,9 +7,9 @@ There are 3 main folders:
 * Arduino :
     Contains the arduino driver code
 * led-positions :
-    contains data sets and code for calculating the X,Y let positions.
-    This also produced the original signCoords.H file
-    (which has since been re-written)
+    contains data sets and code for calculating the X,Y led positions.
+    This also produced the original signCoords.h file
+    (which has since been re-written by hand)
 * processing :
     Contains code for testing and generating color sequences
     for the creation of a 'sequence.h' input file
@@ -20,12 +20,21 @@ The microcode loader and simple sequencer
 
 This uses the LPD6803 library to control the strip
 
-the sign-coords.h file has now neen hardcoded based on testing in the lab.
-So don't run any of the perl scripts unless you want to clobber your code.
+Loads a signCoords.h file containing LED position data
+Loads a sequence.h file (TBD) that can define the effects
+
+The signCoords.h file has now been hardcoded based on testing in the lab.
+So don't run any of the perl scripts unless you want to clobber your data.
+
+NEVER call Color() directly! some of the LED strands have their RGB reversed (as BGR),
+so you need to call the Wrapper function applyColor(R,G,B, ID) that will do the right thing based
+on the pixel ID for that sign.
+
+This also means that each sign is running a slightly different version of the code
 
 ### Build environment
 
-* Clone the libraries into the Arduino libaraies folder
+* Clone the libraries into the Arduino libraries folder
 
     git clone https://github.com/adafruit/LPD6803-RGB-Pixels.git
 
