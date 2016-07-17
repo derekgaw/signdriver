@@ -109,8 +109,6 @@ void loop() {
 ////    color = applyColor(0,0,31,i);
 //    strip.setPixelColor(i, color);
 //  }
-////
-//
 //  
 //  strip.show();
 //  delay (10000);
@@ -147,7 +145,7 @@ void loop() {
 
 
 // use wheel colors to roll around the pallet
-  for(cindex=50; cindex<=96; cindex++) {
+  for(cindex=0; cindex<=96; cindex++) {
     
     // run through some different sequences
 
@@ -156,6 +154,9 @@ void loop() {
     delay(200);
 
     // [ ] blink all the letters
+    blinkAllLetters(cindex,500,5);
+    delay(200);
+
 
     // color letterchase
 //    showLetters(color,200,100);
@@ -180,6 +181,7 @@ void loop() {
  */
 void showLetters(int cindex, int letterDelay, int perPixelDelay ) {
   // loop over ALL letters
+  // we are passed an index to the Wheel() fnction to determine the color
   int letter;
   int i;
   uint32_t color;
@@ -214,6 +216,34 @@ void showLetters(int cindex, int letterDelay, int perPixelDelay ) {
 
 }
 
+void blinkAllLetters(int cindex, int blinkDelay , int numBlinks ) {
+  // loop over ALL letters
+  // we are passed an index to the Wheel() fnction to determine the color
+  int i;
+  int bcount ;
+  uint32_t color;
+
+  for(bcount=0; bcount<numBlinks; bcount++) {
+  
+    //turn it all off
+    for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+    strip.show();
+    delay(blinkDelay);
+    
+    // turn them all on
+    for(i=0; i<strip.numPixels(); i++) {
+      color = Wheel(cindex,i);
+      strip.setPixelColor(i, color);
+    }
+  
+    strip.show();
+    delay(blinkDelay);
+
+  }
+
+}
+
+
 /*
  * run a wipe, but don't clear the last slice,
  * just slowly fill the sign
@@ -222,6 +252,7 @@ void showLetters(int cindex, int letterDelay, int perPixelDelay ) {
 void wipeLeftRight(int cindex, int sliceDelay) {
   // run a wipe X sequence
   // get the # of slices from the first row in the array
+  // we are passed an index to the Wheel() fnction to determine the color
   int s ;
   int i ;
   uint32_t color ;
@@ -253,6 +284,7 @@ void wipeLeftRight(int cindex, int sliceDelay) {
 void wipeUpDown(int cindex, int sliceDelay) {
   // run a wipe Y sequence
   // get the # of slices from the first row in the array
+  // we are passed an index to the Wheel() fnction to determine the color
   int s ;
   int i ;
   uint32_t color ;
