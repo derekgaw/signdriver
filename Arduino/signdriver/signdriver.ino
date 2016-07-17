@@ -14,7 +14,7 @@
 //------------------------------------------------
 // SET swappixels = 1 to enable a lookup
 // these are begin-end pairs, first value is the # of pairs
-byte swapPixels = 1 ;
+byte swapPixels = 0 ;
 byte reversedLED[3] = {1,100,199};
 //byte reversedLED[5] = {1,100,139,178,186};
 //------------------------------------------------
@@ -145,28 +145,35 @@ void loop() {
 
 
 // use wheel colors to roll around the pallet
-  for(cindex=0; cindex<=96; cindex++) {
+  for(cindex=0; cindex<=96; cindex+=8) {
     
     // run through some different sequences
-
     
     showLetters(cindex,500,0);
     delay(200);
 
-    // [ ] blink all the letters
-    blinkAllLetters(cindex,500,5);
+    // rainbow effect ( 3rd arg == 1 );
+    wipeLeftRight(cindex,100,1);
+    delay(1000);
+    
+    // write all the letters at the same time, per pixel
+    chaseAllLetters(cindex,100);
+    delay(200);
+    
+    // blink all the letters
+    blinkAllLetters(cindex,300,5);
     delay(200);
 
-
-    // color letterchase
-//    showLetters(color,200,100);
-//    delay(200);
-
-    wipeLeftRight(cindex,100);
+    wipeLeftRight(cindex,100,0);
     delay(200);
     
     wipeUpDown(cindex,100);
     delay(200);
+
+    // color letterchase - TOO slow...
+//    showLetters(color,200,100);
+//    delay(200);
+
 
   }
 
@@ -216,6 +223,10 @@ void showLetters(int cindex, int letterDelay, int perPixelDelay ) {
 
 }
 
+/*
+ * Blink the letters... should be self xplanatory
+ */
+
 void blinkAllLetters(int cindex, int blinkDelay , int numBlinks ) {
   // loop over ALL letters
   // we are passed an index to the Wheel() fnction to determine the color
@@ -243,13 +254,59 @@ void blinkAllLetters(int cindex, int blinkDelay , int numBlinks ) {
 
 }
 
+/*
+ * chaseAllLetters, write all the letters at the same time,
+ * but one pixel at a time.
+ * we need to manually (hardcode) the end conditions, so we don't fall off
+ * the arrays..
+ * 
+ * !! WARNING, HARDCODING!!
+ */
+
+void chaseAllLetters(int cindex, int perPixelDelay ) {
+  // loop over ALL letters
+  // we are passed an index to the Wheel() fnction to determine the color
+  int letter;
+  int i;
+  int id ;
+  int letterID ;
+  int maxPixels = 71;
+
+  uint32_t color;
+  
+  //turn it all off
+  for(i=0; i<strip.numPixels(); i++) strip.setPixelColor(i, 0);
+
+  // antwalk the pixels
+  // NOTE NOTE!!, we are walking off the end of some of the letter arrays,
+  // because they are different sizes, but we can live with it (I hope)
+  for(i=1; i<=maxPixels; i++) {
+
+    
+  
+//      walk all 3 letters
+      for(letterID=0; letterID<=2; letterID++) {
+      // lookup the pixels in this letter
+        int id = lSeq[letterID][i]; 
+        color = Wheel(cindex,id);
+        strip.setPixelColor(id, color);
+      }
+      
+      strip.show();
+      delay(perPixelDelay);
+      
+  }
+
+
+}
+
 
 /*
  * run a wipe, but don't clear the last slice,
  * just slowly fill the sign
  */
  
-void wipeLeftRight(int cindex, int sliceDelay) {
+void wipeLeftRight(int cindex, int sliceDelay, int makeRainbow ) {
   // run a wipe X sequence
   // get the # of slices from the first row in the array
   // we are passed an index to the Wheel() fnction to determine the color
@@ -271,6 +328,12 @@ void wipeLeftRight(int cindex, int sliceDelay) {
   
     for(i=1; i<=len; i++) {
       int id = wipex[s][i]; 
+
+      // for the rainbow effect, we ignore the cindex that was passed
+      // and calculate it as relative to the slice
+      if ( makeRainbow ) {
+        cindex = ( (float)s / slices ) * 96 ;        
+      }
       color = Wheel(cindex,id);
       strip.setPixelColor(id, color);
     }
