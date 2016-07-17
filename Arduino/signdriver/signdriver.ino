@@ -147,13 +147,12 @@ void loop() {
 
 
 // use wheel colors to roll around the pallet
-  for(cindex=0; cindex<=96; cindex++) {
-    color = Wheel(cindex);
-
+  for(cindex=50; cindex<=96; cindex++) {
+    
     // run through some different sequences
 
     
-    showLetters(color,500,0);
+    showLetters(cindex,500,0);
     delay(200);
 
     // [ ] blink all the letters
@@ -162,12 +161,10 @@ void loop() {
 //    showLetters(color,200,100);
 //    delay(200);
 
-    wipeLeftRight(color,100);
+    wipeLeftRight(cindex,100);
     delay(200);
     
-    wipeUpDown(color,100);
-  
-  //  strip.show();
+    wipeUpDown(cindex,100);
     delay(200);
 
   }
@@ -181,10 +178,11 @@ void loop() {
  * If perPixelDelay > 0, we will draw each letter one pixel at a time
  * 
  */
-void showLetters(uint32_t color, int letterDelay, int perPixelDelay ) {
+void showLetters(int cindex, int letterDelay, int perPixelDelay ) {
   // loop over ALL letters
   int letter;
   int i;
+  uint32_t color;
   for(letter=0; letter<=2; letter++) {
 
     //turn it all off
@@ -195,6 +193,7 @@ void showLetters(uint32_t color, int letterDelay, int perPixelDelay ) {
     for(i=1; i<=len; i++) {
       // lookup the pixels in this letter
       int id = lSeq[letter][i]; 
+      color = Wheel(cindex,id);
       strip.setPixelColor(id, color);
 
       if ( perPixelDelay ) {
@@ -220,11 +219,12 @@ void showLetters(uint32_t color, int letterDelay, int perPixelDelay ) {
  * just slowly fill the sign
  */
  
-void wipeLeftRight(uint32_t color, int sliceDelay) {
+void wipeLeftRight(int cindex, int sliceDelay) {
   // run a wipe X sequence
   // get the # of slices from the first row in the array
   int s ;
   int i ;
+  uint32_t color ;
   int slices = wipex[0][1];
 
   // reset to black
@@ -240,6 +240,7 @@ void wipeLeftRight(uint32_t color, int sliceDelay) {
   
     for(i=1; i<=len; i++) {
       int id = wipex[s][i]; 
+      color = Wheel(cindex,id);
       strip.setPixelColor(id, color);
     }
     strip.show();
@@ -249,11 +250,12 @@ void wipeLeftRight(uint32_t color, int sliceDelay) {
 }
 
 
-void wipeUpDown(uint32_t color, int sliceDelay) {
+void wipeUpDown(int cindex, int sliceDelay) {
   // run a wipe Y sequence
   // get the # of slices from the first row in the array
   int s ;
   int i ;
+  uint32_t color ;
   int slices = wipey[0][1];
 
   // reset to black
@@ -268,6 +270,7 @@ void wipeUpDown(uint32_t color, int sliceDelay) {
   
     for(i=1; i<=len; i++) {
       int id = wipey[s][i]; 
+      color = Wheel(cindex,id);
       strip.setPixelColor(id, color);
     }
     
@@ -387,7 +390,7 @@ uint32_t indexToColor(int index, int id)
 
 //Input a value 0 to 96 to get a color value.
 //The colours are a transition r - g -b - back to r
-uint32_t Wheel(byte WheelPos)
+uint32_t Wheel(byte WheelPos, byte id)
 {
   byte r,g,b;
   switch(WheelPos >> 5)
@@ -408,7 +411,7 @@ uint32_t Wheel(byte WheelPos)
       g=0;                  //green off
       break; 
   }
-  return(Color(r,g,b));
+  return(applyColor(r,g,b,id));
 }
 
 // Create a 15 bit color value from R,G,B
