@@ -96,7 +96,7 @@ void loop() {
 //    delay(200);
 //  }
   
-  // use index color
+  // use index color, doesn't produce a nice colors, too much white
 //  for(cindex=0; cindex<=214; cindex++) {
 //      lookup an index color 
 //    color = indexToColor(cindex,-1);
