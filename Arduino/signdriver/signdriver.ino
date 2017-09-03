@@ -15,7 +15,7 @@
 // SET swappixels = 1 to enable a lookup
 // these are begin-end pairs, first value is the # of pairs
 byte swapPixels = 0 ;
-byte reversedLED[3] = {1,100,199};
+byte reversedLED[3] = {1,100,199}; // one sequence from 100 to 199
 //byte reversedLED[5] = {1,100,139,178,186};
 //------------------------------------------------
 
